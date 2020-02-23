@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>看看还有谁</title>
+    <link href="https://unpkg.com/ant-design-vue@1.4.11/dist/antd.min.css" rel="stylesheet">
+    <!-- vue 版本需要注意，不是每一个版本都起作用的 -->
+    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+    <script src="https://unpkg.com/ant-design-vue@1.4.11/dist/antd.min.js"></script>
+    <!-- 引入 moment.min.js -->
+    <script src="http://momentjs.cn/downloads/moment.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <div style="margin: 100px auto;width: 700px;">
+        <a-card title="谁没交作业">
+            <a-textarea v-model="nameStr" style="margin-bottom: 10px;" placeholder="请输入已交作业学生名单（微信消息接龙格式：1张三2李四）" :autosize="{minRows:3,maxRows:6}"></a-textarea>
+            <a-textarea v-model="allName" style="margin-bottom: 10px;" placeholder="请输入所有学生名单以逗号隔开，或者从excel直接复制" :autosize="{minRows:3,maxRows:6}"></a-textarea>
+            <a-textarea v-model="result" style="margin-bottom: 10px;" placeholder="这些人没有交作业" :autosize="{minRows:3,maxRows:6}"></a-textarea>
+            <div style="margin-bottom: 10px;width: 100%;text-align: right;">
+                <a-button type="primary" v-on:click="handle()">看看还有谁</a-button>
+            </div>
+            <a-alert message="所有学生名单输入一次会保存，清空浏览器缓存则会清空"></a-alert>
+        </a-card>
+    </div>
+</div>
+<script type="application/javascript">
+new Vue({
+    el: '#app',
+    data: {
+        nameStr:'',
+        allName:'',
+        result: ''
+    },
+    mounted: function () {
+        this.allName = this.getAllName();
+    },
+    methods :{
+        handle:function () {
+          try {
+            // 将数字替换成 ,
+            var str = this.nameStr.replace(/\d+/g, ',')
+            // 去掉所有空格
+            str = str.replace(/\s+/g,"");
+            var nameArr = str.slice(1).split(',');
+            // 格式化所有名字
+            this.allName = this.allName.replace(/，/g,",")
+            this.allName = this.allName.replace(/\n/g,",")
+            var allNameArr = this.allName.split(',')
+
+            //   保存allName
+            this.setAllName(this.allName);
+
+            var sa = new Set(nameArr);
+            var sb = new Set(allNameArr);
+            this.result = [...nameArr.filter(x => !sb.has(x)), ...allNameArr.filter(x => !sa.has(x))].join(" ");
+            this.$message.success('操作成功！');
+          } catch (error) {
+              
+          }
+          
+        },
+        getAllName: function () {
+            var str = window.localStorage.getItem("allName");
+            if (str) {
+                return str;
+            }else{
+                return ''
+            }
+        },
+        setAllName: function (allName) {
+            window.localStorage.setItem("allName", allName);
+        }
+
+    }
+});
+</script>
+</body>
+</html>
